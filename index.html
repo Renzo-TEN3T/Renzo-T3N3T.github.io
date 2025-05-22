@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Repositorio de Tesis</title>
+<link rel="stylesheet" href="css/archivo_style.css">
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen font-sans">
+
+<!-- Logo -->
+<div class="fixed top-2 left-4 z-50">
+    <img src="img/logo_autonoma.png" alt="Logo" class="h-16 w-auto">
+</div>
+
+<!-- Menú -->
+<nav class="w-full bg-white bg-opacity-100 shadow mb-8">
+  <ul class="flex justify-center space-x-8 py-7 font-semibold text-gray-700">
+    <li><a href="src/index.html" class="hover:text-blue-700">Información</a></li>
+    <li><a href="archivos.html" class="hover:text-blue-700">Tesis</a></li>
+    <li><a href="src/estudiantes.html" class="hover:text-blue-700">Estudiantes</a></li>
+  </ul>
+</nav>
+
+<div class="max-w-7xl mx-auto py-10 px-10 bg-white bg-opacity-90 rounded shadow">
+<h1 class="text-3xl font-bold text-center text-gray-800 mb-10">Contenido Semanal</h1>
+
+<!-- Formulario para agregar nueva semana -->
+<div class="bg-white shadow rounded p-6 mb-12">
+    <form id="addSemanaForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <input type="number" min="1" max="16" name="week" placeholder="Número de semana" required class="p-2 border rounded">
+        <input type="text" name="tesisLink" placeholder="Enlace Word Tesis (Drive, OneDrive...)" required class="p-2 border rounded">
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Agregar</button>
+    </form>
+</div>
+
+<!-- Unidades y tablas -->
+<div class="bg-white shadow rounded mb-8">
+    <div class="overflow-x-auto">
+        <div id="unidadesContainer"></div>
+    </div>
+</div>
+</div>
+
+<script>
+// Títulos de ejemplo (puedes modificar o traducir)
+const SEMANA_TITULOS = {
+    1: "Socialización del sílabo, normas de escritura, método científico",
+    2: "Identificación y formulación del problema, justificación, objetivos",
+    3: "Búsqueda de información, antecedentes, teorías",
+    4: "Avance 1: Título e introducción",
+    5: "Justificación y objetivos.",
+    6: "Tipos de investigación, población, muestra, hipótesis.",
+    7: "Operacionalización de variables, validez y confiabilidad.",
+    8: "Avance 2: Marco metodológico",
+    9: "Construcción de instrumentos de recolección de datos.",
+    10: "Validez de instrumentos.",
+    11: "Prueba piloto e instrumentos corregidos.",
+    12: "Avance 3: Resultados",
+    13: "Redacción de resultados",
+    14: "Análisis e interpretación",
+    15: "Conclusiones y recomendaciones",
+    16: "Avance final: Documento completo"
+};
+
+const UNIDADES = [
+    { nombre: "Unidad 1", descripcion: "Introducción y Marco Teórico", rango: "Semanas 1-4", inicio: 1, fin: 4 },
+    { nombre: "Unidad 2", descripcion: "Marco Metodológico", rango: "Semanas 5-8", inicio: 5, fin: 8 },
+    { nombre: "Unidad 3", descripcion: "Resultados", rango: "Semanas 9-12", inicio: 9, fin: 12 },
+    { nombre: "Unidad 4", descripcion: "Informe Final", rango: "Semanas 13-16", inicio: 13, fin: 16 }
+];
+
+// Cargar datos de LocalStorage o inicializar
+let semanas = JSON.parse(localStorage.getItem('semanas')) || [];
+
+// Renderizar por unidades
+function renderTabla() {
+    const container = document.getElementById('unidadesContainer');
+    container.innerHTML = '';
+
+    UNIDADES.forEach(unidad => {
+        // Filtrar semanas de la unidad
+        const semanasUnidad = semanas
+            .filter(s => s.numero >= unidad.inicio && s.numero <= unidad.fin)
+            .sort((a, b) => a.numero - b.numero);
+
+        // Si no hay semanas, no mostrar la unidad
+        if (semanasUnidad.length === 0) return;
+
+        // Crear encabezado de la unidad
+        const unidadDiv = document.createElement('div');
+        unidadDiv.className = "mb-10 py-10 px-8 bg-gray-30 ";
+        unidadDiv.innerHTML = `
+            <h2 class="text-2xl font-black text-blue-800 mb-2">${unidad.nombre}</h2>
+            <div class="text-gray-600 mb-4">${unidad.descripcion} <span class="text-sm text-gray-400">(${unidad.rango})</span></div>
+            <table class="min-w-full border text-sm text-left mb-4">
+                <thead class="bg-gray-50 text-gray-700">
+                    <tr>
+                        <th class="px-4 py-2 border">Semana</th>
+                        <th class="px-4 py-2 border">Nombre</th>
+                        <th class="px-4 py-2 border">Tesis</th>
+                        <th class="px-4 py-2 border">Observaciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${semanasUnidad.map(semana => `
+                        <tr class="border-t">
+                            <td class="px-4 py-2 border">${semana.numero}</td>
+                            <td class="px-4 py-2 border">${SEMANA_TITULOS[semana.numero] || 'Sin título'}</td>
+                            <td class="px-4 py-2 border text-center">
+                                ${
+                                    semana.tesisLink
+                                    ? `<a href="${semana.tesisLink}" target="_blank" class="flex items-center justify-center">
+                                            <span class="bg-white rounded-lg shadow p-2 transition-transform hover:scale-110 hover:shadow-lg">
+                                                <img src="img/word_logo.png" alt="Word" class="h-8 w-8">
+                                            </span>
+                                        </a>`
+                                    : '<span class="text-gray-400 flex items-center justify-center">—</span>'
+                                }
+                            </td>
+                            <td class="px-4 py-2 border text-center">
+                                ${
+                                    semana.observacionLink
+                                    ? `<a href="${semana.observacionLink}" target="_blank" class="flex items-center justify-center">
+                                            <span class="bg-white rounded-lg shadow p-2 transition-transform hover:scale-110 hover:shadow-lg">
+                                                <img src="img/word_logo.png" alt="Observación" class="h-8 w-8">
+                                            </span>
+                                        </a>`
+                                    : `<form onsubmit="guardarObservacion(event, ${semana.numero})" class="flex flex-col items-center">
+                                            <input type="text" name="observacionLink" placeholder="Enlace Observación Word" required class="text-sm border rounded px-2 py-1 mb-1">
+                                            <button type="submit" class="bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 text-xs">Guardar</button>
+                                        </form>`
+                                }
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+        container.appendChild(unidadDiv);
+    });
+}
+
+// Guardar nueva semana
+document.getElementById('addSemanaForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const week = parseInt(this.week.value);
+    const tesisLink = this.tesisLink.value.trim();
+    if (!week || !tesisLink) return;
+    // Evitar duplicados
+    if (semanas.some(s => s.numero === week)) {
+        alert('Ya existe una entrada para esa semana.');
+        return;
+    }
+    semanas.push({ numero: week, tesisLink, observacionLink: "" });
+    localStorage.setItem('semanas', JSON.stringify(semanas));
+    renderTabla();
+    this.reset();
+});
+
+// Guardar observación
+function guardarObservacion(e, semanaNum) {
+    e.preventDefault();
+    const link = e.target.observacionLink.value.trim();
+    semanas = semanas.map(s => s.numero === semanaNum ? { ...s, observacionLink: link } : s);
+    localStorage.setItem('semanas', JSON.stringify(semanas));
+    renderTabla();
+}
+
+renderTabla();
+</script>
+</body>
+</html>
