@@ -108,15 +108,6 @@
 <div class="max-w-7xl mx-auto py-10 px-10 bg-white bg-opacity-90 rounded shadow">
 <h1 class="text-3xl font-bold text-center text-gray-800 mb-10">Contenido Semanal</h1>
 
-<!-- Formulario para agregar nueva semana -->
-<div class="bg-white shadow rounded p-6 mb-12">
-    <form id="addSemanaForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <input type="number" min="1" max="16" name="week" placeholder="Número de semana" required class="p-2 border rounded">
-        <input type="text" name="tesisLink" placeholder="Enlace Word Tesis (Drive, OneDrive...)" required class="p-2 border rounded">
-        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Agregar</button>
-    </form>
-</div>
-
 <!-- Unidades y tablas -->
 <div class="bg-white shadow rounded mb-8">
     <div class="overflow-x-auto">
@@ -153,8 +144,15 @@ const UNIDADES = [
     { nombre: "Unidad 4", descripcion: "Informe Final", rango: "Semanas 13-16", inicio: 13, fin: 16 }
 ];
 
-// Cargar datos de LocalStorage o inicializar
-let semanas = JSON.parse(localStorage.getItem('semanas')) || [];
+// Cargar datos de semanas.json
+let semanas = [];
+
+fetch('semanas.json')
+  .then(response => response.json())
+  .then(data => {
+    semanas = data;
+    renderTabla();
+  });
 
 // Renderizar por unidades
 function renderTabla() {
@@ -209,10 +207,7 @@ function renderTabla() {
                                                 <img src="img/word_logo.png" alt="Observación" class="h-8 w-8">
                                             </span>
                                         </a>`
-                                    : `<form onsubmit="guardarObservacion(event, ${semana.numero})" class="flex flex-col items-center">
-                                            <input type="text" name="observacionLink" placeholder="Enlace Observación Word" required class="text-sm border rounded px-2 py-1 mb-1">
-                                            <button type="submit" class="bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 text-xs">Guardar</button>
-                                        </form>`
+                                    : '<span class="text-gray-400 flex items-center justify-center">—</span>'
                                 }
                             </td>
                         </tr>
@@ -223,34 +218,6 @@ function renderTabla() {
         container.appendChild(unidadDiv);
     });
 }
-
-// Guardar nueva semana
-document.getElementById('addSemanaForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const week = parseInt(this.week.value);
-    const tesisLink = this.tesisLink.value.trim();
-    if (!week || !tesisLink) return;
-    // Evitar duplicados
-    if (semanas.some(s => s.numero === week)) {
-        alert('Ya existe una entrada para esa semana.');
-        return;
-    }
-    semanas.push({ numero: week, tesisLink, observacionLink: "" });
-    localStorage.setItem('semanas', JSON.stringify(semanas));
-    renderTabla();
-    this.reset();
-});
-
-// Guardar observación
-function guardarObservacion(e, semanaNum) {
-    e.preventDefault();
-    const link = e.target.observacionLink.value.trim();
-    semanas = semanas.map(s => s.numero === semanaNum ? { ...s, observacionLink: link } : s);
-    localStorage.setItem('semanas', JSON.stringify(semanas));
-    renderTabla();
-}
-
-renderTabla();
 </script>
 </body>
 </html>
